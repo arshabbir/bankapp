@@ -25,7 +25,7 @@ type dbClient struct {
 }
 
 type DBCient interface {
-	CreateAccount(*domain.Account) (string, error)
+	CreateAccount(*domain.Account) (int64, error)
 	ReadAccount(AccountNumber int64) (*domain.Account, error)
 	Transfer(FromAccount int64, ToAccount int64, amount int64) error
 }
@@ -97,21 +97,24 @@ func NewDBClient(host string, port int, user string, password string, dbname str
 	return &dbClient{db: db}
 }
 
-func (c *dbClient) CreateAccount(acc *domain.Account) (string, error) {
+func (c *dbClient) CreateAccount(acc *domain.Account) (int64, error) {
 	stmt := getStatement(INSERT)
 	//	defer stmt.Close()
 
-	id := 0
+	var id int64
 
 	err := stmt.QueryRowContext(context.Background(), acc.Owner, acc.Balance, acc.Currency).Scan(&id)
 	if err != nil {
-		return "", err
+		return -1, err
 	}
 
-	return fmt.Sprintf("%d", id), nil
+	return id, nil
 
 }
 func (c *dbClient) ReadAccount(AccountNumber int64) (*domain.Account, error) {
+	if AccountNumber < 0 {
+		return nil, errors.New("invalied account number")
+	}
 	stmt := getStatement(READ)
 	if stmt == nil {
 		return nil, errors.New("error in prepare statement ")
