@@ -70,17 +70,18 @@ func TestTransfer(t *testing.T) {
 
 	var amount int64 = 100
 
-	wait := make(chan int)
+	errChan := make(chan error)
 	// INitiate transfer
-	go func(chan int) {
+	go func(chan error) {
 		for i := 0; i < 5; i++ {
 			err = db.Transfer(id1, id2, amount)
 			require.Nil(t, err)
 		}
-		wait <- 0
-	}(wait)
+		errChan <- err
+	}(errChan)
 
-	<-wait
+	v := <-errChan
+	require.Nil(t, v)
 
 	acc1, err1 := db.ReadAccount(id1)
 	acc2, err2 := db.ReadAccount(id2)
