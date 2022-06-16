@@ -41,6 +41,12 @@ jobs:
 
     - name: Build
       run: go build -v ./...
+    - name : Install migrate
+      run : |
+       curl -L https://github.com/golang-migrate/migrate/releases/download/$version/migrate.linix-amd64.tar.gz | tar xvz
+       sudo mv migrate.linux-amd64 /usr/bin/migrate
 
+    - name: Run Migrate
+      run : make migrate
     - name: Test
       run: go test -v ./...
