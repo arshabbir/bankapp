@@ -11,7 +11,7 @@ func main() {
 	c := &config.Config{
 		Dbname:   "bank",
 		User:     "postgres",
-		Host:     "localhost",
+		Host:     "postgres",
 		Port:     5432,
 		Password: "password",
 		AppPort:  8080,
