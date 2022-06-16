@@ -10,7 +10,7 @@ type bankService struct {
 }
 
 type BankService interface {
-	CreateAccount(*domain.Account) (string, error)
+	CreateAccount(*domain.Account) (int64, error)
 	ReadAccount(AccountNumber int64) (*domain.Account, error)
 	UpdateAccount(*domain.Account) error
 	DeleteAccount(AccountNumber int64) error
@@ -20,7 +20,7 @@ type BankService interface {
 func NewBankService(dbClient dao.DBCient) BankService {
 	return &bankService{dbClient: dbClient}
 }
-func (c *bankService) CreateAccount(acc *domain.Account) (string, error) {
+func (c *bankService) CreateAccount(acc *domain.Account) (int64, error) {
 	return c.dbClient.CreateAccount(acc)
 }
 func (c *bankService) ReadAccount(AccountNumber int64) (*domain.Account, error) {

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -46,7 +47,7 @@ func (c *controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusOK, Message: "Account creation successful " + resp}); err != nil {
+	if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusOK, Message: fmt.Sprintf("Account creation successful : %d", resp)}); err != nil {
 		log.Fatal("error while sending the response ", err)
 	}
 }
