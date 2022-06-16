@@ -5,5 +5,5 @@ createdb:
 dropdb:
 	docker exec -it postgres dropdb --username=postgres  bank
 migrate:
-	 migrate -path ./migrations -database "postgresql://postgres:password@postgres:5432/bank?sslmode=disable" -verbose up
+	 migrate -path ./migrations -database "postgresql://postgres:password@localhost:5432/bank?sslmode=disable" -verbose up
 .PHONY: createdb dropdb migrate
