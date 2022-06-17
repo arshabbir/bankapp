@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/arshabbir/bankapp/config"
 	"github.com/arshabbir/bankapp/domain"
 	"github.com/arshabbir/bankapp/service"
 	"github.com/arshabbir/bankapp/util"
@@ -15,6 +16,7 @@ import (
 
 type controller struct {
 	bankService service.BankService
+	cfg         *config.Config
 }
 type BankController interface {
 	CreateAccount(http.ResponseWriter, *http.Request)
@@ -22,15 +24,21 @@ type BankController interface {
 	UpdateAccount(http.ResponseWriter, *http.Request)
 	DeleteAccount(http.ResponseWriter, *http.Request)
 	Transfer(http.ResponseWriter, *http.Request)
+	Start() error
 	Ping(w http.ResponseWriter, r *http.Request)
 }
 
-func NewBankController(bService service.BankService) BankController {
-	return &controller{bankService: bService}
+func NewBankController(bService service.BankService, cfg *config.Config) BankController {
+	return &controller{bankService: bService, cfg: cfg}
 }
 func (c *controller) Ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("pong"))
+}
+
+func (c *controller) Start() error {
+	log.Println("Bank Controller serving on port : ", c.cfg.AppPort)
+	return http.ListenAndServe(fmt.Sprintf(":%d", c.cfg.AppPort), registerRoutes(c))
 }
 func (c *controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	acc := domain.Account{}
@@ -102,4 +110,17 @@ func (c *controller) Transfer(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("error while sending the response ", err)
 	}
 
+}
+
+func registerRoutes(ctrl BankController) *mux.Router {
+	mux := mux.NewRouter()
+
+	mux.HandleFunc("/ping", ctrl.Ping)
+	mux.HandleFunc("/create", ctrl.CreateAccount)
+	mux.HandleFunc("/read/{id}", ctrl.ReadAccount)
+	mux.HandleFunc("/delete/{id}", ctrl.DeleteAccount)
+	mux.HandleFunc("/update", ctrl.UpdateAccount)
+	mux.HandleFunc("/transfer", ctrl.Transfer)
+
+	return mux
 }
