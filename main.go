@@ -11,15 +11,18 @@ import (
 )
 
 func main() {
-	c := &config.Config{
-		Dbname:   "bank",
-		User:     "postgres",
-		Host:     "localhost",
-		Port:     5432,
-		Password: "password",
-		AppPort:  8080,
+	conf := config.Config{}
+	c, err := config.ReadConfig(".", &conf)
+
+	if err != nil {
+		log.Fatal("error while reading the config file")
 	}
-	bapp := app.NewApp(controller.NewBankController(service.NewBankService(dao.NewDBClient(c.Host, c.Port, c.User, c.Password, c.Dbname)), c), c)
+	log.Println("Configuration Loaded ", c)
+	db := dao.NewDBClient(c.Host, c.Port, c.User, c.Password, c.Dbname)
+	if db == nil {
+		log.Fatal("error connting to db")
+	}
+	bapp := app.NewApp(controller.NewBankController(service.NewBankService(db), c), c)
 	log.Println("Starting Banking application..")
 	bapp.StartApp()
 }

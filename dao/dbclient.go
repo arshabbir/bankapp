@@ -71,7 +71,8 @@ func getStatement(idx string) *sql.Stmt {
 }
 func NewDBClient(host string, port int, user string, password string, dbname string) DBCient {
 	// connection string
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	//psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlconn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", user, password, host, port, dbname)
 
 	// open database
 	db, err := sql.Open("postgres", psqlconn)
@@ -83,14 +84,14 @@ func NewDBClient(host string, port int, user string, password string, dbname str
 	// check db
 	err = db.Ping()
 	if err != nil {
-		log.Println("error connecting to database ", psqlconn)
+		log.Println("error connecting to database ", err.Error())
 		return nil
 	}
 
 	//	 fmt.Println("Connected!")
 	log.Println("Db connection successful")
 	if err := prepareStatements(db); err != nil {
-		log.Println("error while preparing the statements")
+		log.Println("error while preparing the statements", err.Error())
 		return nil
 	}
 	log.Println("Successfuly prepared the statements")
