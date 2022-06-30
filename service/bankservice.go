@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/arshabbir/bankapp/dao"
 	"github.com/arshabbir/bankapp/domain"
 )
@@ -21,9 +23,15 @@ func NewBankService(dbClient dao.DBCient) BankService {
 	return &bankService{dbClient: dbClient}
 }
 func (c *bankService) CreateAccount(acc *domain.Account) (int64, error) {
+	if acc == nil {
+		return -1, errors.New("Nil account")
+	}
 	return c.dbClient.CreateAccount(acc)
 }
 func (c *bankService) ReadAccount(AccountNumber int64) (*domain.Account, error) {
+	if AccountNumber < 0 {
+		return nil, errors.New("account number cannot be negitive")
+	}
 	return c.dbClient.ReadAccount(AccountNumber)
 
 }
