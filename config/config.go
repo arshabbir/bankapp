@@ -2,6 +2,8 @@ package config
 
 import "github.com/spf13/viper"
 
+var GlobalConf *Config
+
 type Config struct {
 	Dbname   string `mapstructure:"DB_NAME"`
 	User     string `mapstructure:"DB_USER"`
@@ -9,6 +11,7 @@ type Config struct {
 	Port     int    `mapstructure:"DB_PORT"`
 	Password string `mapstructure:"DB_PASSWORD"`
 	AppPort  int    `mapstructure:"APP_PORT"`
+	JWTKEY   string `mapstructure:"SECRETKEY"`
 }
 
 func ReadConfig(path string, conf *Config) (*Config, error) {

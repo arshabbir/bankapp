@@ -4,21 +4,19 @@ import (
 	"errors"
 	"log"
 
-	"github.com/arshabbir/bankapp/config"
 	"github.com/arshabbir/bankapp/controller"
 )
 
 type bankApp struct {
 	bController controller.BankController
-	cfg         *config.Config
 }
 
 type BankApp interface {
 	StartApp() error
 }
 
-func NewApp(ctrl controller.BankController, cfg *config.Config) BankApp {
-	return &bankApp{cfg: cfg, bController: ctrl}
+func NewApp(ctrl controller.BankController) BankApp {
+	return &bankApp{bController: ctrl}
 }
 
 func (a *bankApp) StartApp() error {

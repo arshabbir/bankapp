@@ -22,12 +22,16 @@ const (
 
 type dbClient struct {
 	db *sql.DB
+
+	tokenmap map[string]*domain.TokenMap
 }
 
 type DBCient interface {
 	CreateAccount(*domain.Account) (int64, error)
 	ReadAccount(AccountNumber int64) (*domain.Account, error)
 	Transfer(FromAccount int64, ToAccount int64, amount int64) error
+	Register(domain.User) error
+	CheckUser(username string, email string, password string) (string, error)
 }
 
 var queries map[string]*sql.Stmt
@@ -95,9 +99,33 @@ func NewDBClient(host string, port int, user string, password string, dbname str
 		return nil
 	}
 	log.Println("Successfuly prepared the statements")
-	return &dbClient{db: db}
+	return &dbClient{db: db, tokenmap: make(map[string]*domain.TokenMap)}
 }
 
+func (c *dbClient) Register(user domain.User) error {
+	// Add the user temporarely to hashmap
+	_, ok := c.tokenmap[user.Email]
+	if ok {
+		// Register the user
+		c.tokenmap[user.Email] = &domain.TokenMap{
+			U: &domain.User{Username: user.Username, Password: user.Password, Email: user.Email},
+			T: nil,
+		}
+	}
+
+	return nil
+}
+
+func (c *dbClient) CheckUser(username string, email string, password string) (string, error) {
+	v, ok := c.tokenmap[email]
+	if !ok {
+		return "", errors.New("user not exists " + email)
+	}
+	if username == v.U.Username && v.U.Password == password {
+		return v.T.Token, nil
+	}
+	return "", errors.New("wrong username or password")
+}
 func (c *dbClient) CreateAccount(acc *domain.Account) (int64, error) {
 	stmt := getStatement(INSERT)
 	//	defer stmt.Close()

@@ -16,7 +16,6 @@ import (
 
 type controller struct {
 	bankService service.BankService
-	cfg         *config.Config
 }
 type BankController interface {
 	CreateAccount(http.ResponseWriter, *http.Request)
@@ -26,19 +25,50 @@ type BankController interface {
 	Transfer(http.ResponseWriter, *http.Request)
 	Start() error
 	Ping(w http.ResponseWriter, r *http.Request)
+	Register(w http.ResponseWriter, r *http.Request)
+	Login(w http.ResponseWriter, r *http.Request)
 }
 
-func NewBankController(bService service.BankService, cfg *config.Config) BankController {
-	return &controller{bankService: bService, cfg: cfg}
+func NewBankController(bService service.BankService) BankController {
+	return &controller{bankService: bService}
 }
+
+func (c *controller) Login(w http.ResponseWriter, r *http.Request) {
+
+	// TODO : Get username passwrod from token request & pass to Login service function to get the jwt token
+
+}
+
+func (c *controller) Register(w http.ResponseWriter, r *http.Request) {
+	u := domain.User{}
+	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusBadRequest, Message: "Invalid request " + err.Error()}); err != nil {
+			log.Fatal("error while sending the response")
+		}
+		return
+	}
+
+	if err := c.bankService.Register(u); err != nil {
+		if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusInternalServerError, Message: "unable to register " + err.Error()}); err != nil {
+			log.Fatal("error while sending the response")
+		}
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusOK, Message: fmt.Sprintf("Registration successful : %s", u.Username)}); err != nil {
+		log.Fatal("error while sending the response ", err)
+	}
+
+}
+
 func (c *controller) Ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("pong"))
 }
 
 func (c *controller) Start() error {
-	log.Println("Bank Controller serving on port : ", c.cfg.AppPort)
-	return http.ListenAndServe(fmt.Sprintf(":%d", c.cfg.AppPort), registerRoutes(c))
+	log.Println("Bank Controller serving on port : ", config.GlobalConf.AppPort)
+	return http.ListenAndServe(fmt.Sprintf(":%d", config.GlobalConf.AppPort), registerRoutes(c))
 }
 func (c *controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	acc := domain.Account{}
