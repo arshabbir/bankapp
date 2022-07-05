@@ -44,6 +44,7 @@ func (c *controller) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	defer r.Body.Close()
 	resp, err := c.bankService.Login(l)
 	if err != nil {
 		if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusInternalServerError, Message: "unable to login " + err.Error()}); err != nil {

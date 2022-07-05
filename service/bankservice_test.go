@@ -47,10 +47,13 @@ func (f *fakeDAO) CreateAccount(acc *domain.Account) (int64, error) {
 
 }
 
-func (f *fakeDAO) CheckUser(username string, email string, password string) (string, error) {
+func (f *fakeDAO) GetUser(username string, email string, password string) (string, error) {
 	return "", nil
 }
 
+func (f *fakeDAO) UpdateUserToken(email string, token string) error {
+	return nil
+}
 func (f *fakeDAO) ReadAccount(AccountNumber int64) (*domain.Account, error) {
 	return &domain.Account{Id: AccountNumber, Owner: "arshabbir", Balance: 100, Created: time.Now()}, nil
 

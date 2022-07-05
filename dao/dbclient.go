@@ -31,7 +31,8 @@ type DBCient interface {
 	ReadAccount(AccountNumber int64) (*domain.Account, error)
 	Transfer(FromAccount int64, ToAccount int64, amount int64) error
 	Register(domain.User) error
-	CheckUser(username string, email string, password string) (string, error)
+	GetUser(username string, email string, password string) (string, error)
+	UpdateUserToken(email string, token string) error
 }
 
 var queries map[string]*sql.Stmt
@@ -105,27 +106,41 @@ func NewDBClient(host string, port int, user string, password string, dbname str
 func (c *dbClient) Register(user domain.User) error {
 	// Add the user temporarely to hashmap
 	_, ok := c.tokenmap[user.Email]
-	if ok {
+	if !ok {
 		// Register the user
 		c.tokenmap[user.Email] = &domain.TokenMap{
 			U: &domain.User{Username: user.Username, Password: user.Password, Email: user.Email},
-			T: nil,
+			T: &domain.LoginReponse{},
 		}
+		return nil
 	}
+	return errors.New("user already exists")
 
-	return nil
 }
 
-func (c *dbClient) CheckUser(username string, email string, password string) (string, error) {
+func (c *dbClient) GetUser(username string, email string, password string) (string, error) {
 	v, ok := c.tokenmap[email]
 	if !ok {
 		return "", errors.New("user not exists " + email)
 	}
-	if username == v.U.Username && v.U.Password == password {
+	if v.T.Token == "" {
+		return "", nil
+	}
+	if v.U.Username == username && v.U.Password == password {
 		return v.T.Token, nil
 	}
-	return "", errors.New("wrong username or password")
+	return v.T.Token, errors.New("wrong username or password")
 }
+
+func (c *dbClient) UpdateUserToken(email string, token string) error {
+	v, ok := c.tokenmap[email]
+	if !ok {
+		return errors.New("user not exists " + email)
+	}
+	v.T.Token = token
+	return nil
+}
+
 func (c *dbClient) CreateAccount(acc *domain.Account) (int64, error) {
 	stmt := getStatement(INSERT)
 	//	defer stmt.Close()
