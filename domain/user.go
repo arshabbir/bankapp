@@ -9,13 +9,13 @@ type User struct {
 	Addres   string `json:"address"`
 }
 
-type TokenRequest struct {
+type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
 }
 
-type TokenReponse struct {
+type LoginReponse struct {
 	Username string `json:"username"`
 	Token    string `json:"token"`
 }
@@ -28,5 +28,5 @@ type JWTClaim struct {
 
 type TokenMap struct {
 	U *User
-	T *TokenReponse
+	T *LoginReponse
 }

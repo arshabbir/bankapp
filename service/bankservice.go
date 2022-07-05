@@ -21,7 +21,7 @@ type BankService interface {
 	DeleteAccount(AccountNumber int64) error
 	Transfer(FromAccountID int64, ToAccountID int64, amount int64) error
 	Register(domain.User) error
-	Login(domain.TokenRequest) (*domain.TokenReponse, error)
+	Login(domain.LoginRequest) (*domain.LoginReponse, error)
 }
 
 func NewBankService(dbClient dao.DBCient) BankService {
@@ -32,8 +32,7 @@ func (c *bankService) Register(user domain.User) error {
 	return c.dbClient.Register(user)
 }
 
-func (c *bankService) Login(r domain.TokenRequest) (*domain.TokenReponse, error) {
-
+func (c *bankService) Login(r domain.LoginRequest) (*domain.LoginReponse, error) {
 	token, err := c.dbClient.CheckUser(r.Username, r.Email, r.Password)
 	if err != nil {
 		return nil, err
@@ -41,7 +40,7 @@ func (c *bankService) Login(r domain.TokenRequest) (*domain.TokenReponse, error)
 
 	// check if token exists
 	if token != "" {
-		return &domain.TokenReponse{Token: token, Username: r.Username}, nil
+		return &domain.LoginReponse{Token: token, Username: r.Username}, nil
 	}
 
 	// Generate the token and respond
@@ -50,7 +49,7 @@ func (c *bankService) Login(r domain.TokenRequest) (*domain.TokenReponse, error)
 		return nil, err
 	}
 
-	return &domain.TokenReponse{Username: r.Username, Token: token}, nil
+	return &domain.LoginReponse{Username: r.Username, Token: token}, nil
 }
 
 func (c *bankService) CreateAccount(acc *domain.Account) (int64, error) {

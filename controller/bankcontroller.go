@@ -37,6 +37,24 @@ func (c *controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	// TODO : Get username passwrod from token request & pass to Login service function to get the jwt token
 
+	l := domain.LoginRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&l); err != nil {
+		if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusBadRequest, Message: "Invalid request " + err.Error()}); err != nil {
+			log.Fatal("error while sending the response")
+		}
+		return
+	}
+	resp, err := c.bankService.Login(l)
+	if err != nil {
+		if err := json.NewEncoder(w).Encode(&util.ApiError{Statuscode: http.StatusInternalServerError, Message: "unable to login " + err.Error()}); err != nil {
+			log.Fatal("error while sending the response")
+		}
+		return
+	}
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Fatal("error while sending the response ", err)
+	}
+
 }
 
 func (c *controller) Register(w http.ResponseWriter, r *http.Request) {
@@ -151,6 +169,8 @@ func registerRoutes(ctrl BankController) *mux.Router {
 	mux.HandleFunc("/delete/{id}", ctrl.DeleteAccount)
 	mux.HandleFunc("/update", ctrl.UpdateAccount)
 	mux.HandleFunc("/transfer", ctrl.Transfer)
+	mux.HandleFunc("/login", ctrl.Login)
+	mux.HandleFunc("/register", ctrl.Register)
 
 	return mux
 }
