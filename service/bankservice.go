@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	"github.com/arshabbir/bankapp/config"
@@ -33,7 +34,7 @@ func (c *bankService) Register(user domain.User) error {
 }
 
 func (c *bankService) Login(r domain.LoginRequest) (*domain.LoginReponse, error) {
-	token, err := c.dbClient.CheckUser(r.Username, r.Email, r.Password)
+	token, err := c.dbClient.GetUser(r.Username, r.Email, r.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -49,6 +50,9 @@ func (c *bankService) Login(r domain.LoginRequest) (*domain.LoginReponse, error)
 		return nil, err
 	}
 
+	if err := c.dbClient.UpdateUserToken(r.Email, token); err != nil {
+		return nil, err
+	}
 	return &domain.LoginReponse{Username: r.Username, Token: token}, nil
 }
 
@@ -87,7 +91,9 @@ func generateJWT(username string, email string) (tokenString string, err error) 
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err = token.SignedString(config.GlobalConf.JWTKEY)
+	log.Println("Key ", config.GlobalConf.JWTKEY)
+	tokenString, err = token.SignedString([]byte(config.GlobalConf.JWTKEY))
+	log.Println("generateJWT ", err)
 	return
 }
 func validateToken(signedToken string) (err error) {
