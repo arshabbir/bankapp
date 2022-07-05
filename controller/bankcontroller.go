@@ -27,6 +27,7 @@ type BankController interface {
 	Ping(w http.ResponseWriter, r *http.Request)
 	Register(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
+	AuthMiddleware(h http.Handler) http.Handler
 }
 
 func NewBankController(bService service.BankService) BankController {
@@ -166,12 +167,15 @@ func registerRoutes(ctrl BankController) *mux.Router {
 
 	mux.HandleFunc("/ping", ctrl.Ping)
 	mux.HandleFunc("/create", ctrl.CreateAccount)
-	mux.HandleFunc("/read/{id}", ctrl.ReadAccount)
+	mux.HandleFunc("/login", ctrl.Login)
+	mux.HandleFunc("/register", ctrl.Register)
+
+	//mux.Use(ctrl.AuthMiddleware)
+	mux.Handle("/read/{id}", ctrl.AuthMiddleware(http.HandlerFunc(ctrl.ReadAccount)))
+	//mux.HandleFunc("/read/{id}", ctrl.ReadAccount)
 	mux.HandleFunc("/delete/{id}", ctrl.DeleteAccount)
 	mux.HandleFunc("/update", ctrl.UpdateAccount)
 	mux.HandleFunc("/transfer", ctrl.Transfer)
-	mux.HandleFunc("/login", ctrl.Login)
-	mux.HandleFunc("/register", ctrl.Register)
 
 	return mux
 }

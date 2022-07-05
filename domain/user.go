@@ -22,6 +22,7 @@ type LoginReponse struct {
 
 type JWTClaim struct {
 	Username string `json:"username"`
+	Id       int64  `json:"Id"`
 	Email    string `json:"email"`
 	jwt.StandardClaims
 }

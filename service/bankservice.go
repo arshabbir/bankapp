@@ -116,5 +116,6 @@ func validateToken(signedToken string) (err error) {
 		err = errors.New("token expired")
 		return
 	}
+
 	return
 }
