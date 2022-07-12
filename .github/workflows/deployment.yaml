@@ -7,10 +7,11 @@ on:
 jobs:
 
   build:
+    name : Build Image
     runs-on: ubuntu-latest
     # Service containers to run with `container-job`
-    services:
-     steps:
+ 
+    steps:
     - uses: actions/checkout@v3
 
     - name: Configure AWS Credentials
